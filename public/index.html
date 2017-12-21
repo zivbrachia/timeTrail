@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Animating Symbols</title>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+
+        #map {
+            height: 50%;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="control">
+        <input type="button" value="next offset" onclick="alert('next offset')">
+        <ul>
+            <li>time:
+                <div id="time">12341341421</div>
+            </li>
+            <li>start time:
+                <div id="starttime">12341341421</div>
+            </li>
+            <li>duration:
+                <div id="duration">0</div>
+            </li>
+            <li>lat:
+                <div id="lat">lat</div>
+            </li>
+            <li>lng:
+                <div id="lng">lng</div>
+            </li>
+        </ul>
+    </div>
+    <div id="map"></div>
+    <script>
+        // This example adds an animated symbol to a polyline.
+        var map;
+        let trail2 = setData();
+        function setData() {
+            let trail2 = [
+                { "time": "2017-12-19T08:14:22.056Z", "lat": "32.054373", "lng": "34.784688" },
+                { "time": "2017-12-19T08:14:31.770Z", "lat": "32.054535", "lng": "34.784538" },
+                { "time": "2017-12-19T08:14:42.170Z", "lat": "32.054616", "lng": "34.78434" }
+            ]
+
+            trail2[0]["duration"] = 0;
+            trail2[0]["totalDuration"] = 0;
+
+            for (let i = 1; i < trail2.length; i++) {
+                let coord = trail2[i];
+                let time2 = new Date(coord.time);
+                let time1 = new Date(trail2[i - 1].time);
+                let startTime = new Date(trail2[0].time);
+                let duration = time2.getTime() - time1.getTime();
+                let totalDuration = time2.getTime() - startTime.getTime();
+                trail2[i]["duration"] = duration;
+                trail2[i]["totalDuration"] = totalDuration;
+            }
+            return trail2;
+        }
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 32.053109, lng: 34.780164 },
+                zoom: 16,
+                mapTypeId: 'terrain'
+            });
+
+            // Define the symbol, using one of the predefined paths ('CIRCLE')
+            // supplied by the Google Maps JavaScript API.
+            var lineSymbol = {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                strokeColor: '#393'
+            };
+
+            var lineSymbol2 = {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                strokeColor: '#200'
+            };
+
+            var line2 = new google.maps.Polyline({
+                path: [
+                    { lat: 32.054373, lng: 34.784688 },
+                    { lat: 32.054535, lng: 34.784538 },
+                    { lat: 32.054616, lng: 34.78434 },
+                    { lat: 32.054421, lng: 34.784238 },
+                    { lat: 32.054179, lng: 34.784196 },
+                    { lat: 32.054256, lng: 34.783982 },
+                    { lat: 32.054319, lng: 34.783609 },
+                    { lat: 32.054455, lng: 34.783321 },
+                    { lat: 32.054502, lng: 34.783092 },
+                    { lat: 32.054451, lng: 34.782747 },
+                    { lat: 32.05461, lng: 34.782579 },
+                    { lat: 32.054748, lng: 34.78237 },
+                    { lat: 32.054531, lng: 34.78223 },
+                    { lat: 32.054357, lng: 34.782057 },
+                    { lat: 32.054218, lng: 34.781922 },
+                    { lat: 32.053986, lng: 34.78195 },
+                    { lat: 32.053802, lng: 34.78184 },
+                    { lat: 32.053679, lng: 34.78162 },
+                    { lat: 32.053711, lng: 34.781325 },
+                    { lat: 32.053525, lng: 34.781191 },
+                    { lat: 32.053337, lng: 34.781159 },
+                    { lat: 32.053296, lng: 34.780951 },
+                    { lat: 32.053261, lng: 34.780716 },
+                    { lat: 32.053328, lng: 34.780444 },
+                    { lat: 32.053359, lng: 34.78021 },
+                    { lat: 32.053093, lng: 34.78011 },
+                    { lat: 32.052962, lng: 34.779936 },
+                    { lat: 32.052944, lng: 34.77954 },
+                    { lat: 32.052831, lng: 34.779293 },
+                    { lat: 32.052992, lng: 34.77898 },
+                    { lat: 32.053097, lng: 34.778759 },
+                    { lat: 32.053215, lng: 34.778534 },
+                    { lat: 32.053312, lng: 34.778307 },
+                    { lat: 32.053337, lng: 34.778014 },
+                    { lat: 32.053384, lng: 34.77776 },
+                    { lat: 32.05337, lng: 34.777511 },
+                    { lat: 32.053481, lng: 34.777335 },
+                    { lat: 32.05353, lng: 34.777045 },
+                    { lat: 32.05357, lng: 34.776808 },
+                    { lat: 32.053685, lng: 34.776601 },
+                    { lat: 32.053717, lng: 34.776376 },
+                    { lat: 32.053764, lng: 34.776151 },
+                    { lat: 32.05362, lng: 34.775926 },
+                    { lat: 32.053441, lng: 34.775814 },
+                    { lat: 32.053223, lng: 34.775765 },
+                    { lat: 32.053064, lng: 34.775639 },
+                    { lat: 32.053169, lng: 34.775411 },
+                    { lat: 32.053159, lng: 34.775092 },
+                    { lat: 32.053177, lng: 34.774819 },
+                    { lat: 32.053069, lng: 34.774563 },
+                    { lat: 32.05295, lng: 34.774387 },
+                    { lat: 32.052932, lng: 34.774101 },
+                    { lat: 32.052939, lng: 34.773865 },
+                    { lat: 32.053036, lng: 34.773632 },
+                    { lat: 32.052902, lng: 34.773456 },
+                    { lat: 32.052709, lng: 34.773258 },
+                    { lat: 32.052592, lng: 34.773042 },
+                    { lat: 32.052523, lng: 34.772798 },
+                    { lat: 32.052545, lng: 34.772442 },
+                    { lat: 32.052507, lng: 34.772142 },
+                    { lat: 32.052531, lng: 34.771902 },
+                    { lat: 32.05255, lng: 34.771633 },
+                    { lat: 32.052594, lng: 34.771405 },
+                    { lat: 32.052613, lng: 34.771063 },
+                    { lat: 32.052643, lng: 34.770799 },
+                    { lat: 32.052554, lng: 34.770567 },
+                    { lat: 32.052341, lng: 34.770225 },
+                    { lat: 32.052102, lng: 34.770177 },
+                    { lat: 32.051905, lng: 34.770242 },
+                    { lat: 32.051974, lng: 34.769746 },
+                    { lat: 32.051965, lng: 34.769493 },
+                    { lat: 32.051878, lng: 34.769248 },
+                    { lat: 32.051705, lng: 34.769139 },
+                    { lat: 32.051536, lng: 34.768975 },
+                    { lat: 32.051219, lng: 34.768585 },
+                    { lat: 32.050988, lng: 34.768433 },
+                    { lat: 32.051079, lng: 34.768146 },
+                    { lat: 32.051179, lng: 34.767939 },
+                    { lat: 32.051237, lng: 34.767698 },
+                    { lat: 32.051285, lng: 34.767396 },
+                    { lat: 32.051332, lng: 34.767187 },
+                    { lat: 32.05121, lng: 34.766986 },
+                    { lat: 32.051051, lng: 34.766835 },
+                    { lat: 32.050939, lng: 34.766659 },
+                    { lat: 32.050686, lng: 34.766507 },
+                    { lat: 32.05048, lng: 34.766513 }
+                ],
+                icons: [{
+                    icon: lineSymbol2,
+                    offset: '100%'
+
+                }],
+                map: map,
+                name: "line2"
+            });
+
+            animateCircle(line2);
+        }
+
+        // Use the DOM setInterval() function to change the offset of the symbol
+        // at fixed intervals.
+        function animateCircle(line) {
+            var count = 0;
+            window.setInterval(function () {
+                count = (count + 1) % 200;
+
+                var icons = line.get('icons');
+                icons[0].offset = (count / 2) + '%';
+                console.log("offset = " + (count / 2) + '% ' + line.name);
+                line.set('icons', icons);
+            }, 200);
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDI_p2k0-PSoet-1fvZ5wBMOuZnNAPx3Bw 
+&callback=initMap">
+</script>
+</body>
+
+</html>
