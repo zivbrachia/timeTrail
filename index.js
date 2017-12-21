@@ -45,7 +45,6 @@ app.post('/log', function (req, res) {
 });
 
 app.get('/log', function (req, res) {
-    console.log(req);
     if (!req.query) {
         res.json("bad query string");
         return;
@@ -59,7 +58,8 @@ app.get('/log', function (req, res) {
         req.query.timestamp,
         req.query.time
     );
-    loggerGps.debug(JSON.stringify(pack));
+    pack.log();
+    
     res.json("ok");
 });
 
@@ -78,5 +78,9 @@ class Package {
         this.startTimestamp = startTimestamp;
         this.timestamp = timestamp;
         this.time = time;
+    }
+
+    log() {
+        loggerGps.debug(JSON.stringify(this));
     }
 }
