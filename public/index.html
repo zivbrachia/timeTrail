@@ -27,10 +27,13 @@
 <body>
     <div id="control">
         <input type="button" value="next offset" onclick="addCoords()">
+        <input type="button" value="watch position" onclick="watchPosition()">
+        <input type="button" value="clear watch" onclick="clearWatch()">
+    </div>
+    <div id="output">
     </div>
     <div id="map"></div>
     <script>
-
         // This example creates an interactive map which constructs a polyline based on
         // user clicks. Note that the polyline only appears once its path property
         // contains two LatLng coordinates.
@@ -39,6 +42,8 @@
         var map;
         var lineSymbol;
         var pathGps = {pathGps};
+        var watchId;
+        var marker;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -61,6 +66,8 @@
 
             poly.setMap(map);
 
+            marker = new google.maps.Marker();
+            marker.setMap(map);
             // Add a listener for the click event
             //map.addListener('click', addLatLng);
         }
@@ -82,11 +89,37 @@
         }
 
         function addCoords() {
-            debugger;
             var coords = pathGps.splice(0, 1);
             var path = poly.getPath();
             path.push(new google.maps.LatLng(coords[0].lat, coords[0].lng));
         }
+
+        function watchPosition() {
+            //setInterval(function () {
+                var watchId = navigator.geolocation.watchPosition(function (position) {
+                    document.getElementById("output").innerHTML = 'currentLat ' + position.coords.latitude + ' currentLon ' + position.coords.longitude;
+                    //console.log('currentLat ' + position.coords.latitude);
+                    //console.log('currentLon ' + position.coords.longitude);
+                    var center = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                    map.panTo(center);
+                    
+                    
+                    marker.setPosition(center);
+                    marker.setIcon(google.maps.SymbolPath.CIRCLE);
+                        //position: map.getCenter(),
+                        //icon: {
+                        //    path: google.maps.SymbolPath.CIRCLE,
+                        //    scale: 10
+                        //}
+                    //});
+                });
+            //}, 1000);
+        }
+
+        function clearWatch() {
+            navigator.geolocation.clearWatch(watchId);
+        }
+
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDI_p2k0-PSoet-1fvZ5wBMOuZnNAPx3Bw&callback=initMap">
     </script>
