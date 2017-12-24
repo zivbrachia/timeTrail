@@ -96,23 +96,36 @@
 
         function watchPosition() {
             //setInterval(function () {
-                var watchId = navigator.geolocation.watchPosition(function (position) {
-                    document.getElementById("output").innerHTML = 'currentLat ' + position.coords.latitude + ' currentLon ' + position.coords.longitude;
-                    //console.log('currentLat ' + position.coords.latitude);
-                    //console.log('currentLon ' + position.coords.longitude);
-                    var center = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                    map.panTo(center);
-                    
-                    
-                    marker.setPosition(center);
-                    marker.setIcon(google.maps.SymbolPath.CIRCLE);
+                var watchId = navigator.geolocation.watchPosition(
+                    // Success
+                    function (position) {
+                        document.getElementById("output").innerHTML = 'currentLat ' + position.coords.latitude + ' currentLon ' + position.coords.longitude;
+                        //console.log('currentLat ' + position.coords.latitude);
+                        //console.log('currentLon ' + position.coords.longitude);
+                        var center = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        map.panTo(center);
+
+
+                        marker.setPosition(center);
+                        marker.setIcon(google.maps.SymbolPath.CIRCLE);
                         //position: map.getCenter(),
                         //icon: {
                         //    path: google.maps.SymbolPath.CIRCLE,
                         //    scale: 10
                         //}
-                    //});
-                });
+                        //});
+                    },
+                    // Error
+                    function (error) {
+                        document.getElementById("output").innerHTML = 'error: ' + error;
+                    },
+                    // PositionOptions
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 1000,
+                        maximumAge: 0
+                    }
+             );
             //}, 1000);
         }
 
