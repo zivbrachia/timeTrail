@@ -7,6 +7,8 @@ let log4js = require('log4js');
 let fs = require('fs');
 let geolib = require('geolib');
 
+app.use(express.static('public'));
+
 log4js.configure({
     appenders: {
         appender1: { type: 'file', filename: 'logger.log' },
