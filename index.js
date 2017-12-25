@@ -47,6 +47,12 @@ app.post('/log', function (req, res) {
 
 });
 
+app.get('/login', function (req, res) {
+    // https://developers.google.com/identity/sign-in/web/devconsole-project
+    let html = fs.readFileSync(__dirname + '/public/login.html', 'utf8');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+});
 app.get('/log', function (req, res) {
     if (!req.query) {
         res.json("bad query string");
@@ -55,11 +61,13 @@ app.get('/log', function (req, res) {
     let pack = new Package(
         req.query.lat,
         req.query.lng,
-        req.query.alt,
+        req.query.altitude,
         req.query.activity,
         req.query.starttimestamp,
         req.query.timestamp,
-        req.query.time
+        req.query.time,
+        req.query.speed,
+        req.query.battery
     );
     pack.log();
     
@@ -192,16 +200,18 @@ app.listen(port)
 logger.debug('Your application is running on http://localhost:', port);
 
 class Package {
-    constructor(lat, lng, alt, activity, startTimestamp, timestamp, time) {
+    constructor(lat, lng, alt, activity, startTimestamp, timestamp, time, speed, batteryLevel) {
         this.position = {
             "lat": lat,
             "lng": lng
         };
-        this.altitue = alt;
+        this.altitude = alt;
         this.activity = activity;
         this.startTimestamp = startTimestamp;
         this.timestamp = timestamp;
         this.time = time;
+        this.speed = speed;
+        this.batteryLevel = batteryLevel;
     }
 
     log() {

@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <title>Complex Polylines</title>
     <style>
         /* Always set the map height explicitly to define the size of the div
@@ -41,9 +42,23 @@
         var poly;
         var map;
         var lineSymbol;
-        var pathGps = {pathGps};
+        var pathGps = { pathGps };
         var watchId;
         var marker;
+        var batteryLevel;
+
+        // We get the initial value when the promise resolves ...
+        navigator.getBattery().then(function (battery) {
+            console.log(battery.level);
+            // ... and any subsequent updates.
+            battery.onlevelchange = function () {
+                console.log(this.level);
+                batteryLevel = this.level;
+            };
+        }).catch(function (error) {
+            console.log(error);
+            batteryLevel = error;
+        });
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -96,36 +111,59 @@
 
         function watchPosition() {
             //setInterval(function () {
-                var watchId = navigator.geolocation.watchPosition(
-                    // Success
-                    function (position) {
-                        document.getElementById("output").innerHTML = 'currentLat ' + position.coords.latitude + ' currentLon ' + position.coords.longitude;
-                        //console.log('currentLat ' + position.coords.latitude);
-                        //console.log('currentLon ' + position.coords.longitude);
-                        var center = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                        map.panTo(center);
+            var watchId = navigator.geolocation.watchPosition(
+                // Success
+                function (position) {
+                    document.getElementById("output").innerHTML = 'currentLat ' + position.coords.latitude + '</br>currentLon ' + position.coords.longitude + '</br>batteryLevel ' + batteryLevel;
+                    //console.log('currentLat ' + position.coords.latitude);
+                    //console.log('currentLon ' + position.coords.longitude);
+                    var center = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                    map.panTo(center);
 
 
-                        marker.setPosition(center);
-                        marker.setIcon(google.maps.SymbolPath.CIRCLE);
-                        //position: map.getCenter(),
-                        //icon: {
-                        //    path: google.maps.SymbolPath.CIRCLE,
-                        //    scale: 10
-                        //}
-                        //});
-                    },
-                    // Error
-                    function (error) {
-                        document.getElementById("output").innerHTML = 'error: ' + error;
-                    },
-                    // PositionOptions
-                    {
-                        enableHighAccuracy: false,
-                        timeout: 1000,
-                        maximumAge: 0
-                    }
-             );
+                    marker.setPosition(center);
+                    marker.setIcon(google.maps.SymbolPath.CIRCLE);
+                    //position: map.getCenter(),
+                    //icon: {
+                    //    path: google.maps.SymbolPath.CIRCLE,
+                    //    scale: 10
+                    //}
+                    //});
+                    var id = "ziv";
+                    $.ajax({
+                        url: "/log",
+                        type: "get",
+                        data: {
+                            "id": id,
+                            "lat": position.coords.latitude,
+                            "lng": position.coords.longitude,
+                            "accuracy": position.coords.accuracy,
+                            "altitude": position.coords.altitude,
+                            "speed": position.coords.speed,
+                            "timestamp": position.timestamp,
+                            "battery" : batteryLevel
+                        },
+                        async: true,
+                        dataType: "json",
+                        success: function (result) {
+                            console.log("result: " + result);
+                        },
+                        error: function (error) {
+                            console.log("error: " + error);
+                        }
+                    });
+                },
+                // Error
+                function (error) {
+                    document.getElementById("output").innerHTML = 'error: ' + error;
+                },
+                // PositionOptions
+                {
+                    enableHighAccuracy: false,
+                    timeout: 1000,
+                    maximumAge: 0
+                }
+            );
             //}, 1000);
         }
 
