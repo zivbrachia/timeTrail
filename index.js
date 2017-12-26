@@ -35,9 +35,9 @@ logger.fatal('fatal msg');*/
 app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
-    let html = fs.readFileSync(__dirname + '/public/index.html', 'utf8');
+    let html = fs.readFileSync(__dirname + '/dynamic/index.html', 'utf8');
     let pathGps = getPathGps();
-    html = html.replace('{pathGps}', JSON.stringify(pathGps.coordinates));
+    html = html.replace('{ pathGps }', JSON.stringify(pathGps.coordinates));
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
     //res.send('Hello World');
