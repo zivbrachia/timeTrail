@@ -24,9 +24,8 @@
 self.addEventListener('push', function (event) {
     console.log('[Service Worker] Push Received.');
     console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
-    console.log(JSON.stringify(event));
 
-    const title = 'ziv';
+    const title = 'Time Trail';
     const options = {
         body: event.data.text(),
         icon: 'images/icon.png',
