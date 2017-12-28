@@ -38,12 +38,13 @@ logger.fatal('fatal msg');*/
 app.use(bodyParser.json());         // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
-})); 
+}));
 
 app.get('/', function (req, res) {
     let html = fs.readFileSync(__dirname + '/dynamic/index.html', 'utf8');
-    let pathGps = getPathGps("106247184114772635229");
-    html = html.replace('{ pathGps }', JSON.stringify(pathGps.coordinates));
+    let userPathsGps = getUserPathsGps("106247184114772635229");
+    let coordinates = userPathsGps && userPathsGps[0] && userPathsGps[0].coordinates || []; //TODO
+    html = html.replace('{ pathGps }', JSON.stringify(coordinates));
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
     //res.send('Hello World');
@@ -55,7 +56,7 @@ app.get('/log/:userId', function (req, res) {
         res.json("bad query string");
         return;
     }
-    fs.readFile(req.params.userId + '.json', (err, data) => {  
+    fs.readFile("usersHistory/" + req.params.userId + '.json', (err, data) => {
         if (err) {
             res.json(err);
             return;
@@ -67,22 +68,38 @@ app.get('/log/:userId', function (req, res) {
 
 app.post('/log', function (req, res) {
     console.log(req.body);
-    if ((req.body && req.body[0]) === undefined) {
+    if (req.body.userId === undefined) {
         res.json("error");
         return;
     }
 
-    let userId = req.body[0].id;
-    loggerGps.debug(req.body);
-    fs.writeFile(userId + '.json', JSON.stringify(req.body), (err) => {  
+    saveFile(req.body.userId, req.body, (err) => {
         if (err) {
-            console.log(err);
             res.json();
         } else {
-            res.json();    
+            res.json();
         }
     });
+    // fs.writeFile("usersHistory/" + userId + '.json', JSON.stringify(req.body), (err) => {
+    //     if (err) {
+    //         console.log(err);
+    //         res.json();
+    //     } else {
+    //         res.json();
+    //     }
+    // });
 });
+
+function saveFile(userId, dataToSave, callback) {
+    addCoordinatAttributes(dataToSave);
+    let data = "[]";
+    try {
+        data = fs.readFileSync("usersHistory/" + userId + '.json', 'utf8');
+    } catch (err) { }
+    data = JSON.parse(data);
+    data.push(dataToSave);
+    fs.writeFile("usersHistory/" + userId + '.json', JSON.stringify(data), callback);
+}
 
 app.get('/login', function (req, res) {
     // https://developers.google.com/identity/sign-in/web/devconsole-project
@@ -91,10 +108,14 @@ app.get('/login', function (req, res) {
     res.end(html);
 });
 
-function getPathGps(userId) {
-    let data = fs.readFileSync(userId + '.json' ,'utf8');
-    let pathGps = { coordinates: [] };
-    pathGps.coordinates = JSON.parse(data);
+function getUserPathsGps(userId) {
+    let data = [];
+    try {
+        data = fs.readFileSync("usersHistory/" + userId + '.json', 'utf8');
+    } catch (err) { }
+    if (typeof data === "string") {
+        data = JSON.parse(data);
+    }
     // pathGps.coordinates = [
     //     { lat: 32.054373, lng: 34.784688 },
     //     { lat: 32.054535, lng: 34.784538 },
@@ -184,18 +205,25 @@ function getPathGps(userId) {
     //     { lat: 32.05048, lng: 34.766513 }
     //];
 
+    if (!data.length) {
+        return [];
+    }
+    return data;
+}
+
+function addCoordinatAttributes(pathGps) {
     let totalDistance = 0;
     pathGps.coordinates[0]["distance"] = 0;
     let totalDuration = 0;
     pathGps.coordinates[0]["duration"] = 0;
 
     for (let i = 1; i < pathGps.coordinates.length; i++) {
-        let coordinate = pathGps.coordinates[i-1];
+        let coordinate = pathGps.coordinates[i - 1];
         let nextCoordinate = pathGps.coordinates[i];
 
-        let distance = geolib.getDistance({latitude: coordinate.lat, longitude: coordinate.lng},
-            {latitude: nextCoordinate.lat, longitude: nextCoordinate.lng});
-        
+        let distance = geolib.getDistance({ latitude: coordinate.lat, longitude: coordinate.lng },
+            { latitude: nextCoordinate.lat, longitude: nextCoordinate.lng });
+
         if (coordinate.timestamp && nextCoordinate.timestamp) {
             let time = new Date(coordinate.timestamp);
             let nextTime = new Date(nextCoordinate.timestamp);
@@ -210,7 +238,6 @@ function getPathGps(userId) {
         nextCoordinate["accuDistance"] = distance + (coordinate["accuDistance"] || 0);
         totalDistance = totalDistance + distance;
     }
-    
     return pathGps;
 }
 

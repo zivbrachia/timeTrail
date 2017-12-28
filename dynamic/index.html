@@ -204,7 +204,6 @@
                     marker.setIcon(google.maps.SymbolPath.CIRCLE);
 
                     let data = {
-                        "id": userId,
                         "lat": position.coords.latitude,
                         "lng": position.coords.longitude,
                         "accuracy": position.coords.accuracy,
@@ -248,10 +247,15 @@
 
         function saveData(userId) {
             console.log("saveData");
+            let data = {
+                "userId" : userId,
+                "name" : "path1",
+                "coordinates" : getData(userId)
+            }
             $.ajax({
                 url: "/log",
                 type: "post",
-                data: sessionStorage[userId],
+                data: JSON.stringify(data),
                 async: true,
                 contentType: 'application/json',
                 success: function (result) {
