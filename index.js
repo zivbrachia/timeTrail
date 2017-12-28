@@ -32,7 +32,10 @@ logger.warn('warn msg.');
 logger.error('error msg');
 logger.fatal('fatal msg');*/
 
-app.use(bodyParser.json());
+app.use(bodyParser.json());         // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+    extended: true
+})); 
 
 app.get('/', function (req, res) {
     let html = fs.readFileSync(__dirname + '/dynamic/index.html', 'utf8');
@@ -46,6 +49,8 @@ app.get('/', function (req, res) {
 
 app.post('/log', function (req, res) {
     console.log(req);
+    loggerGps.debug(req.body);
+    res.json();
 
 });
 

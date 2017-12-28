@@ -54,6 +54,12 @@
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="javascript:void(0);" onclick="start()">Start</a>
+                </li>
+                <li>
+                    <a href="javascript:void(0);" onclick="end()">End</a>
+                </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
@@ -95,12 +101,21 @@
     <div id="map"></div>
     
     <script>
+        var poly;
+        var map;
+        var lineSymbol;
+        var pathGps = { pathGps };
+        var watchId;
+        var marker;
+        var batteryLevel;
+        var userProfile;
+
         function onSignIn(googleUser) {
-            var profile = googleUser.getBasicProfile();
-            console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-            console.log('Name: ' + profile.getName());
-            console.log('Image URL: ' + profile.getImageUrl());
-            console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+            userProfile = googleUser.getBasicProfile();
+            console.log('ID: ' + userProfile.getId()); // Do not send to your backend! Use an ID token instead.
+            console.log('Name: ' + userProfile.getName());
+            console.log('Image URL: ' + userProfile.getImageUrl());
+            console.log('Email: ' + userProfile.getEmail()); // This is null if the 'email' scope is not present.
         }
 
         function signOut() {
@@ -112,14 +127,6 @@
         // This example creates an interactive map which constructs a polyline based on
         // user clicks. Note that the polyline only appears once its path property
         // contains two LatLng coordinates.
-
-        var poly;
-        var map;
-        var lineSymbol;
-        var pathGps = { pathGps };
-        var watchId;
-        var marker;
-        var batteryLevel;
 
         // We get the initial value when the promise resolves ...
         navigator.getBattery().then(function (battery) {
@@ -183,7 +190,7 @@
             path.push(new google.maps.LatLng(coords[0].lat, coords[0].lng));
         }
 
-        function watchPosition() {
+        function watchPosition(userId) {
             var watchId = navigator.geolocation.watchPosition(
                 // Success
                 function (position) {
@@ -195,29 +202,18 @@
 
                     marker.setPosition(center);
                     marker.setIcon(google.maps.SymbolPath.CIRCLE);
-                    var id = "ziv";
-                    $.ajax({
-                        url: "/log",
-                        type: "get",
-                        data: {
-                            "id": id,
-                            "lat": position.coords.latitude,
-                            "lng": position.coords.longitude,
-                            "accuracy": position.coords.accuracy,
-                            "altitude": position.coords.altitude,
-                            "speed": position.coords.speed,
-                            "timestamp": position.timestamp,
-                            "battery": batteryLevel
-                        },
-                        async: true,
-                        dataType: "json",
-                        success: function (result) {
-                            console.log("result: " + result);
-                        },
-                        error: function (error) {
-                            console.log("error: " + error);
-                        }
-                    });
+
+                    let data = {
+                        "id": userId,
+                        "lat": position.coords.latitude,
+                        "lng": position.coords.longitude,
+                        "accuracy": position.coords.accuracy,
+                        "altitude": position.coords.altitude,
+                        "speed": position.coords.speed,
+                        "timestamp": position.timestamp,
+                        "battery": batteryLevel
+                    };
+                    addData(userId, data);
                 },
                 // Error
                 function (error) {
@@ -234,6 +230,54 @@
 
         function clearWatch() {
             navigator.geolocation.clearWatch(watchId);
+        }
+
+        function start() {
+            if (userProfile && userProfile.getId()) {
+                resetData(userProfile.getId());
+                watchPosition(userProfile.getId());
+            } else {
+                console.log("Need to login first");
+            }
+        }
+
+        function end() {
+            saveData(userProfile.getId());
+            clearWatch();
+        }
+
+        function saveData(userId) {
+            console.log("saveData");
+            $.ajax({
+                url: "/log",
+                type: "post",
+                data: sessionStorage[userId],
+                async: true,
+                contentType: 'application/json',
+                success: function (result) {
+                    console.log("result: " + result);
+                },
+                error: function (error) {
+                    console.log("error: " + error);
+                }
+            });
+        }
+
+        function resetData(userId) {
+            sessionStorage.removeItem(userId);
+        }
+
+        function addData(userId, data) {
+            let records = getData(userId);
+            records = records || [];
+            records.push(data);
+            sessionStorage.setItem(userId, JSON.stringify(records));
+        }
+
+        function getData(userId) {
+            let data = sessionStorage.getItem(userId);
+            data = JSON.parse(data);
+            return data;
         }
     </script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
